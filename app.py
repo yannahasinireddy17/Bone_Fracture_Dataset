@@ -1,11 +1,11 @@
 import os
+import pickle
 import threading
 
 import cv2
 import numpy as np
 from flask import Flask, jsonify, request
 from skimage.feature import hog
-from sklearn.svm import SVC
 
 app = Flask(__name__)
 
@@ -24,27 +24,6 @@ def extract_hog_features(img_bgr):
     )
 
 
-def load_data(folder):
-    data = []
-    labels = []
-
-    for label, category in enumerate(["fractured", "not fractured"]):
-        path = os.path.join(folder, category)
-        if not os.path.exists(path):
-            continue
-
-        for img_name in os.listdir(path):
-            img_path = os.path.join(path, img_name)
-            img = cv2.imread(img_path)
-            if img is None:
-                continue
-
-            data.append(extract_hog_features(img))
-            labels.append(label)
-
-    return np.array(data), np.array(labels)
-
-
 def get_model():
     global _model
 
@@ -56,17 +35,15 @@ def get_model():
             return _model
 
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        train_dir = os.path.join(base_dir, "train")
+        model_path = os.path.join(base_dir, "model.pkl")
 
-        x_train, y_train = load_data(train_dir)
-        if len(x_train) == 0:
+        if not os.path.exists(model_path):
             raise RuntimeError(
-                "No training data found. For Vercel deployment, upload train/ folder or use pre-trained model."
+                f"Pre-trained model not found at {model_path}. Please ensure model.pkl is in the deployment."
             )
 
-        model = SVC(kernel="linear")
-        model.fit(x_train, y_train)
-        _model = model
+        with open(model_path, "rb") as f:
+            _model = pickle.load(f)
         return _model
 
 
