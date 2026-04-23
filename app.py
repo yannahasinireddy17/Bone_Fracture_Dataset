@@ -60,7 +60,9 @@ def get_model():
 
         x_train, y_train = load_data(train_dir)
         if len(x_train) == 0:
-            raise RuntimeError("No training data found in train/fractured and train/not fractured")
+            raise RuntimeError(
+                "No training data found. For Vercel deployment, upload train/ folder or use pre-trained model."
+            )
 
         model = SVC(kernel="linear")
         model.fit(x_train, y_train)

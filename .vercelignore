@@ -1,0 +1,9 @@
+train/
+test/
+val/
+.venv/
+*.pyc
+__pycache__/
+.git/
+run_output.log
+text_image_bone.png.png
